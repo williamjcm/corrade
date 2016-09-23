@@ -52,6 +52,9 @@ struct Test: TestSuite::Tester {
     void emit();
     void emitterSubclass();
     void emitterVirtualBase();
+    void emitterMultipleInheritanceA();
+    void emitterMultipleInheritanceB();
+    void emitterMultipleInheritanceC();
     void receiverSubclass();
     void slotInReceiverBase();
     void virtualSlot();
@@ -137,6 +140,9 @@ Test::Test() {
               &Test::emit,
               &Test::emitterSubclass,
               &Test::emitterVirtualBase,
+              &Test::emitterMultipleInheritanceA,
+              &Test::emitterMultipleInheritanceB,
+              &Test::emitterMultipleInheritanceC,
               &Test::receiverSubclass,
               &Test::slotInReceiverBase,
               &Test::virtualSlot,
@@ -445,6 +451,76 @@ void Test::emitterVirtualBase() {
     CORRADE_VERIFY(postman.hasSignalConnections(&Diamond::newDiamondCladMessage));
     postman.disconnectSignal(&Diamond::newDiamondCladMessage);
     CORRADE_VERIFY(!postman.hasSignalConnections());
+}
+
+void Test::emitterMultipleInheritanceA() {
+    class Base {
+        int:32; /* Some padding to prevent empty base optimization */
+    };
+
+    /* Emitter inherited second */
+    struct MultiplyInherited: Base, Interconnect::Emitter {
+        Signal newMessage(int price, const std::string& value) {
+            return emit<MultiplyInherited, int, const std::string&>(&MultiplyInherited::newMessage, price, value);
+        }
+    };
+
+    MultiplyInherited postman;
+    Mailbox mailbox;
+
+    Interconnect::connect(postman, &MultiplyInherited::newMessage, mailbox, &Mailbox::addMessage);
+
+    postman.newMessage(5, "hello");
+    CORRADE_COMPARE(mailbox.messages, (std::vector<std::string>{"hello"}));
+    CORRADE_COMPARE(mailbox.money, 5);
+}
+
+void Test::emitterMultipleInheritanceB() {
+    class Base {
+        int:32; /* Some padding to prevent empty base optimization */
+    };
+
+    /* Emitter inherited first */
+    struct MultiplyInherited: Interconnect::Emitter, Base {
+        Signal newMessage(int price, const std::string& value) {
+            return emit(&MultiplyInherited::newMessage, price, value);
+        }
+    };
+
+    MultiplyInherited postman;
+    Mailbox mailbox;
+
+    Interconnect::connect(postman, &MultiplyInherited::newMessage, mailbox, &Mailbox::addMessage);
+
+    postman.newMessage(5, "hello");
+    CORRADE_COMPARE(mailbox.messages, (std::vector<std::string>{"hello"}));
+    CORRADE_COMPARE(mailbox.money, 5);
+}
+
+void Test::emitterMultipleInheritanceC() {
+    class Base {
+        int:32; /* Some padding to prevent empty base optimization */
+    };
+
+    /* Calling emit from a function that has different return type than Signal */
+    struct MultiplyInherited: Interconnect::Emitter, Base {
+        Signal newMessage(int price, const std::string& value) {
+            return emit(&MultiplyInherited::newMessage, price, value);
+        }
+
+        void newMessageNoReturn(int price, const std::string& value) {
+            emit(&MultiplyInherited::newMessage, price, value);
+        }
+    };
+
+    MultiplyInherited postman;
+    Mailbox mailbox;
+
+    Interconnect::connect(postman, &MultiplyInherited::newMessage, mailbox, &Mailbox::addMessage);
+
+    postman.newMessageNoReturn(5, "hello");
+    CORRADE_COMPARE(mailbox.messages, (std::vector<std::string>{"hello"}));
+    CORRADE_COMPARE(mailbox.money, 5);
 }
 
 void Test::receiverSubclass() {
