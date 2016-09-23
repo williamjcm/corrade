@@ -69,9 +69,24 @@ namespace Implementation {
             #endif
 
             bool operator==(const SignalData& other) const {
+                #ifndef CORRADE_MSVC2015_COMPATIBILITY
                 for(std::size_t i = 0; i != Size; ++i)
                     if(data[i] != other.data[i]) return false;
                 return true;
+                #else
+                /* MSVC in non-Debug mode sometimes calculates different
+                   function pointer for multiple inheritance classes based on
+                   various circumstances (see the emitterMultipleInheritance[ABC]()
+                   test cases). We only want to compare the actual function
+                   pointer and not care about `this` pointer patching.
+                   According to http://www.codeproject.com/Articles/7150/Member-Function-Pointers-and-the-Fastest-Possible,
+                   the function pointer lies in the first entry, so it should
+                   be okay to compare just that one and ignore the rest. I'm
+                   not exactly sure but this might blow up when using virtual
+                   inheritance and other complex things. I need to test that. */
+                static_assert(Size == 2, "MSVC workaround assumes a different member function pointer size than is currently used");
+                return data[0] == other.data[0];
+                #endif
             }
 
             bool operator!=(const SignalData& other) const {

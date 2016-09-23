@@ -458,7 +458,8 @@ void Test::emitterMultipleInheritanceA() {
         int:32; /* Some padding to prevent empty base optimization */
     };
 
-    /* Emitter inherited second */
+    /* Emitter inherited second. On MSVC this fails in Release mode without the
+       workaround in SignalData::operator==(). */
     struct MultiplyInherited: Base, Interconnect::Emitter {
         Signal newMessage(int price, const std::string& value) {
             return emit<MultiplyInherited, int, const std::string&>(&MultiplyInherited::newMessage, price, value);
@@ -480,7 +481,9 @@ void Test::emitterMultipleInheritanceB() {
         int:32; /* Some padding to prevent empty base optimization */
     };
 
-    /* Emitter inherited first */
+    /* Emitter inherited first. On MSVC this makes no difference to the above
+       case, both fail in Release mode without the workaround in
+       SignalData::operator==(). */
     struct MultiplyInherited: Interconnect::Emitter, Base {
         Signal newMessage(int price, const std::string& value) {
             return emit(&MultiplyInherited::newMessage, price, value);
@@ -502,7 +505,10 @@ void Test::emitterMultipleInheritanceC() {
         int:32; /* Some padding to prevent empty base optimization */
     };
 
-    /* Calling emit from a function that has different return type than Signal */
+    /* Calling emit from a function that has different return type than Signal.
+       On MSVC this has a different behavior than the above two test cases --
+       it works in both Debug and Release mode, but fails in "" (empty) mode
+       without the workaround in SignalData::operator==(). */
     struct MultiplyInherited: Interconnect::Emitter, Base {
         Signal newMessage(int price, const std::string& value) {
             return emit(&MultiplyInherited::newMessage, price, value);
