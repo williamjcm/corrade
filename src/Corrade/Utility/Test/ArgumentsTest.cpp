@@ -12,7 +12,7 @@ template<class T> struct Color3: Vec3<T> {
 };
 
 template<class T> struct Color4 {
-    constexpr Color4(const Color3<T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: d{rgb.d[0], rgb.d[1], rgb.d[2], a} {}
+    constexpr Color4(const Vec3<T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: d{rgb.d[0], rgb.d[1], rgb.d[2], a} {}
     T d[4];
 };
 
