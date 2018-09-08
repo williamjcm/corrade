@@ -15,12 +15,16 @@ template<class T> struct Vec3: Vec<3, T> {
     constexpr Vec3(T r, T g, T b) noexcept: Vec<3, T>{r, g, b} {}
 };
 
+template<class T> struct Vec4: Vec<4, T> {
+    constexpr Vec4(T r, T g, T b, T a) noexcept: Vec<4, T>{r, g, b, a} {}
+};
+
 template<class T> struct Color3: Vec3<T> {
     constexpr Color3(T r, T g, T b) noexcept: Vec3<T>{r, g, b} {}
 };
 
-template<class T> struct Color4: Vec<4, T> {
-    constexpr Color4(const Vec<3, T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec<4, T>{rgb[0], rgb[1], rgb[2], a} {}
+template<class T> struct Color4: Vec4<T> {
+    constexpr Color4(const Vec<3, T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
 };
 
 constexpr float foo(const Color4<float>& c) { return c.d[3]; }
