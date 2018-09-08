@@ -24,12 +24,14 @@ template<class T> struct Color3: Vec3<T> {
 };
 
 template<class T> struct Color4: Vec4<T> {
-    constexpr Color4(const Vec<3, T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
+    constexpr Color4(const Vec3<T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
 };
+
+constexpr Color3<float> bar() { return {2.0f, 1.0f, 0.3f}; }
 
 constexpr float foo(const Color4<float>& c) { return c.d[3]; }
 
 int main() {
-    constexpr float a = foo(Color3<float>(2.0f, 1.0f, 0.3f));
+    constexpr float a = foo(bar());
     return a;
 }
