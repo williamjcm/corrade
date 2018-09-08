@@ -224,5 +224,5 @@ add_subdirectory(src)
 
 # Build snippets as part of testing
 if(BUILD_TESTS)
-    add_subdirectory(doc/snippets)
+#     add_subdirectory(doc/snippets)
 endif()
