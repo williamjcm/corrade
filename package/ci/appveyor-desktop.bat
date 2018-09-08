@@ -12,17 +12,17 @@ cmake .. ^
     -DBUILD_TESTS=ON ^
     -G Ninja || exit /b
 cmake --build . || exit /b
-cmake --build . --target install || exit /b
-
-rem Test
-set CORRADE_TEST_COLOR=ON
-ctest -V || exit /b
-
-rem Examples
-cd %APPVEYOR_BUILD_FOLDER% || exit /b
-mkdir build-examples && cd build-examples || exit /b
-cmake ../src/examples ^
-    -DCMAKE_BUILD_TYPE=Debug ^
-    -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/deps ^
-    -G Ninja || exit /b
-cmake --build . || exit /b
+rem  cmake --build . --target install || exit /b
+rem
+rem  rem Test
+rem  set CORRADE_TEST_COLOR=ON
+rem  ctest -V || exit /b
+rem
+rem  rem Examples
+rem  cd %APPVEYOR_BUILD_FOLDER% || exit /b
+rem  mkdir build-examples && cd build-examples || exit /b
+rem  cmake ../src/examples ^
+rem      -DCMAKE_BUILD_TYPE=Debug ^
+rem      -DCMAKE_PREFIX_PATH=%APPVEYOR_BUILD_FOLDER%/deps ^
+rem      -G Ninja || exit /b
+rem  cmake --build . || exit /b

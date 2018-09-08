@@ -1,6 +1,12 @@
 template<class T> T someFuncThatReturnsOne();
 
-template<> float someFuncThatReturnsOne<float>() { return 1.0f; }
+template<> constexpr unsigned char someFuncThatReturnsOne<unsigned char>() { return 255; }
+template<> constexpr float someFuncThatReturnsOne<float>() { return 1.0f; }
+
+// template<int size, class T> struct Vec {
+//     template<class ...Args> constexpr Vec(Args... args) noexcept: d{args...} {}
+//     T d[3];
+// };
 
 template<class T> struct Vec3 {
     constexpr Vec3(T r, T g, T b) noexcept: d{r, g, b} {}
@@ -16,8 +22,9 @@ template<class T> struct Color4 {
     T d[4];
 };
 
-float foo(const Color4<float>& c) { return c.d[0]; }
+constexpr float foo(const Color4<float>& c) { return c.d[0]; }
 
 int main() {
-    return foo(Color3<float>(0, 0, 0));
+    constexpr float a = foo(Color3<float>(0, 0, 0));
+    return a;
 }
