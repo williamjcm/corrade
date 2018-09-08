@@ -49,28 +49,28 @@ install(FILES ${Corrade_HEADERS} DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/configure.h DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 
 if(WITH_UTILITY) # Cyclic dependency of Containers and Utility
-    add_subdirectory(Containers)
+#     add_subdirectory(Containers)
 endif()
-
-if(WITH_INTERCONNECT)
-    add_subdirectory(Interconnect)
-endif()
-
-if(WITH_PLUGINMANAGER)
-    add_subdirectory(PluginManager)
-endif()
-
-if(WITH_TESTSUITE)
-    add_subdirectory(TestSuite)
-endif()
-
-if(WITH_UTILITY OR WITH_RC)
+#
+# if(WITH_INTERCONNECT)
+#     add_subdirectory(Interconnect)
+# endif()
+#
+# if(WITH_PLUGINMANAGER)
+#     add_subdirectory(PluginManager)
+# endif()
+#
+# if(WITH_TESTSUITE)
+#     add_subdirectory(TestSuite)
+# endif()
+#
+# if(WITH_UTILITY OR WITH_RC)
     add_subdirectory(Utility)
-endif()
-
-if(BUILD_TESTS)
-    add_subdirectory(Test)
-endif()
+# endif()
+#
+# if(BUILD_TESTS)
+#     add_subdirectory(Test)
+# endif()
 
 # Corrade configure file for superprojects
 set(_CORRADE_CONFIGURE_FILE ${CMAKE_CURRENT_BINARY_DIR}/configure.h CACHE INTERNAL "")
