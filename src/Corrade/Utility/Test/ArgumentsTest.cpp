@@ -11,7 +11,7 @@ template<bool a> constexpr std::enable_if_t<!a, bool> id() {
 
 }
 
-template<class T> constexpr T foo(T, bool = detail::id<sizeof(T) == 1>()) {
+template<class T> T foo(T, bool = detail::id<sizeof(T) == 1>()) {
     return {};
 }
 
