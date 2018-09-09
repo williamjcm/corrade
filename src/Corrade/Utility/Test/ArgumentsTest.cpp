@@ -12,9 +12,10 @@ template<class T, unsigned int bits = sizeof(T)*8> inline constexpr T bitMax() {
 template<class T> constexpr typename std::enable_if<std::is_floating_point<T>::value, T>::type someFuncThatReturnsOne() {
     return T(1);
 }
-// template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
+template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
+    return {};
 //     return Implementation::bitMax<T>();
-// }
+}
 
 }
 
