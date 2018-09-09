@@ -2,10 +2,10 @@
 
 namespace detail {
 
-template<bool a> constexpr typename std::enable_if<a, bool>::type id() {
+template<bool a> constexpr std::enable_if_t<a, bool> id() {
     return true;
 }
-template<bool a> constexpr typename std::enable_if<!a, bool>::type id() {
+template<bool a> constexpr std::enable_if_t<!a, bool> id() {
     return false;
 }
 
