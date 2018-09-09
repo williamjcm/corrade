@@ -11,7 +11,7 @@ template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, 
 
 }
 
-template<class T> constexpr T foo(T, T b = Implementation::someFuncThatReturnsOne<T>()) { return b; }
+template<class T> constexpr T foo(T, T = Implementation::someFuncThatReturnsOne<T>()) { return T{}; }
 
 int main() {
     foo(1.0f);
