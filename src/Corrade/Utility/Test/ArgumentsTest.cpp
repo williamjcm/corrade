@@ -1,7 +1,14 @@
-template<class T> T someFuncThatReturnsOne();
+#include <type_traits>
 
-template<> constexpr unsigned char someFuncThatReturnsOne<unsigned char>() { return 255; }
-template<> constexpr float someFuncThatReturnsOne<float>() { return 1.0f; }
+// template<class T> T someFuncThatReturnsOne();
+//
+// template<> constexpr unsigned char someFuncThatReturnsOne<unsigned char>() { return 255; }
+
+template<class T> constexpr typename std::enable_if<std::is_floating_point<T>::value, T>::type someFuncThatReturnsOne() {
+    return T(1);
+}
+
+// template<> constexpr float someFuncThatReturnsOne<float>() { return 1.0f; }
 
 template<int size, class T> struct Vec {
     template<class ...Args> constexpr Vec(Args... args) noexcept: d{args...} {}
