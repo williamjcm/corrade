@@ -27,11 +27,11 @@ template<class T> struct Color4: Vec4<T> {
     constexpr Color4(const Vec3<T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
 };
 
-// constexpr Color3<float> bar() { return {2.0f, 1.0f, 0.3f}; }
+Color3<float> bar(int a) { return {2.0f + a, 1.0f, 0.3f}; }
 
-constexpr float foo(const Color4<float>& c) { return c.d[3]; }
+float foo(const Color4<float>& c) { return c.d[3]; }
 
-int main() {
-    constexpr float a = foo({{2.0f, 1.0f, 0.3f}});
+int main(int argc, char**) {
+    float a = foo(bar(argc));
     return a;
 }
