@@ -2,7 +2,7 @@
 
 namespace Implementation {
 
-template<class T> constexpr typename std::enable_if<std::is_floating_point<T>::value, T>::type someFuncThatReturnsOne() {
+template<class T> constexpr typename std::enable_if<!std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
     return T(1);
 }
 template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
@@ -11,7 +11,7 @@ template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, 
 
 }
 
-template<class T> constexpr T foo(T, T = Implementation::someFuncThatReturnsOne<T>()) { return T{}; }
+template<class T> constexpr T foo(T, T = Implementation::someFuncThatReturnsOne<T>()) { return {}; }
 
 int main() {
     foo(1.0f);
