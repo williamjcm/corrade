@@ -12,13 +12,9 @@ template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, 
 }
 
 template<class T> struct Color4 {
-    constexpr Color4(T a, T b = Implementation::someFuncThatReturnsOne<T>()) noexcept: d{a, b} {}
-    T d[2];
+    constexpr Color4(T, T = Implementation::someFuncThatReturnsOne<T>()) {}
 };
-
-constexpr float foo(const Color4<float>& c) { return c.d[1]; }
 
 int main() {
     constexpr Color4<float> a{1.0f};
-    return a.d[1];
 }
