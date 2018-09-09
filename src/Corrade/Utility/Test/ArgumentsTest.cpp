@@ -2,11 +2,11 @@
 
 namespace Implementation {
 
-template<class T> constexpr typename std::enable_if<!std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
-    return T(1);
+template<class T> constexpr typename std::enable_if<sizeof(T) == 1, int>::type someFuncThatReturnsOne() {
+    return 1;
 }
-template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
-    return {};
+template<class T> constexpr typename std::enable_if<sizeof(T) != 1, int>::type someFuncThatReturnsOne() {
+    return 0;
 }
 
 }
