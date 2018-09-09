@@ -1,17 +1,17 @@
 #include <type_traits>
 
-// namespace Implementation {
+namespace Implementation {
 
-template<class T> constexpr typename std::enable_if<sizeof(T) == 1, int>::type someFuncThatReturnsOne() {
+template<int a> constexpr typename std::enable_if<a == 1, int>::type yay() {
     return 1;
 }
-template<class T> constexpr typename std::enable_if<sizeof(T) != 1, int>::type someFuncThatReturnsOne() {
+template<int a> constexpr typename std::enable_if<a != 1, int>::type yay() {
     return 0;
 }
 
-// }
+}
 
-template<class T> constexpr T foo(T, T = /*Implementation::*/someFuncThatReturnsOne<T>()) { return {}; }
+template<class T> constexpr T foo(T, T = Implementation::yay<sizeof(T)>()) { return {}; }
 
 int main() {
     foo(1.0f);
