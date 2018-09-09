@@ -6,7 +6,7 @@ rem Build
 mkdir build && cd build || exit /b
 cmake .. ^
     -DCMAKE_BUILD_TYPE=Debug ^
-    -DCMAKE_CXX_FLAGS="/sdl /permissive-" ^
+    -DCMAKE_CXX_FLAGS="" ^
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/deps ^
     -DUTILITY_USE_ANSI_COLORS=%ANSI_COLORS% ^
     -DBUILD_TESTS=ON ^
