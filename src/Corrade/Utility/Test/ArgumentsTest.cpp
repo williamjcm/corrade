@@ -51,6 +51,6 @@ template<class T> struct Color4 {
 constexpr float foo(const Color4<float>& c) { return c.d[3]; }
 
 int main() {
-    float a = foo({{1.0f, 2.f, 3.0f}});
+    float a = foo({{}});
     return a;
 }
