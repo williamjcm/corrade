@@ -1,15 +1,15 @@
 #include <type_traits>
 
 namespace detail {
-    template<bool a> std::enable_if_t<a, bool> id() {
+    template<int a> std::enable_if_t<a, int> id() {
         return true;
     }
-    template<bool a> std::enable_if_t<!a, bool> id() {
+    template<int a> std::enable_if_t<!a, int> id() {
         return false;
     }
 }
 
-template<class T> T foo(T, T = detail::id<sizeof(T) == 1>()) {
+template<class T> T foo(T, int = detail::id<sizeof(T) == 1>()) {
     return {};
 }
 
