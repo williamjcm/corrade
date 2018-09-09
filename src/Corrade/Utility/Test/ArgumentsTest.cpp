@@ -2,16 +2,18 @@
 
 namespace detail {
 
-template<int a> constexpr typename std::enable_if<a == 1, bool>::type byte() {
-    return 1;
+template<bool a> constexpr typename std::enable_if<a, bool>::type id() {
+    return true;
 }
-template<int a> constexpr typename std::enable_if<a != 1, bool>::type byte() {
-    return 0;
-}
-
+template<bool a> constexpr typename std::enable_if<!a, bool>::type id() {
+    return false;
 }
 
-template<class T> constexpr T foo(T, bool = detail::byte<sizeof(T)>()) { return {}; }
+}
+
+template<class T> constexpr T foo(T, bool = detail::id<sizeof(T) == 1>()) {
+    return {};
+}
 
 int main() {
     foo(1.0f);
