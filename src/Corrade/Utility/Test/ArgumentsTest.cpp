@@ -19,6 +19,6 @@ template<class T> struct Color4 {
 constexpr float foo(const Color4<float>& c) { return c.d[1]; }
 
 int main() {
-    float a = foo({1.0f});
+    constexpr float a = Implementation::someFuncThatReturnsOne<float>();
     return a;
 }
