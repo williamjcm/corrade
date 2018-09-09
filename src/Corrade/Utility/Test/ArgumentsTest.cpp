@@ -1,5 +1,7 @@
 #include <type_traits>
 
+namespace Implementation {
+
 template<class T> constexpr typename std::enable_if<std::is_floating_point<T>::value, T>::type someFuncThatReturnsOne() {
     return T(1);
 }
@@ -7,8 +9,10 @@ template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, 
     return {};
 }
 
+}
+
 template<class T> struct Color4 {
-    constexpr Color4(T a, T b = someFuncThatReturnsOne<T>()) noexcept: d{a, b} {}
+    constexpr Color4(T a, T b = Implementation::someFuncThatReturnsOne<T>()) noexcept: d{a, b} {}
     T d[2];
 };
 
