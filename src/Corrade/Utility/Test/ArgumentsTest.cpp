@@ -6,8 +6,6 @@ template<class T, unsigned int bits = sizeof(T)*8> inline constexpr T bitMax() {
     return T(typename std::make_unsigned<T>::type(~T{}) >> (sizeof(T)*8 - (std::is_signed<T>::value ? bits - 1 : bits)));
 }
 
-}
-
 // template<class T> T someFuncThatReturnsOne();
 //
 // template<> constexpr unsigned char someFuncThatReturnsOne<unsigned char>() { return 255; }
@@ -16,6 +14,8 @@ template<class T> constexpr typename std::enable_if<std::is_floating_point<T>::v
 }
 template<class T> constexpr typename std::enable_if<std::is_integral<T>::value, T>::type someFuncThatReturnsOne() {
     return Implementation::bitMax<T>();
+}
+
 }
 
 
@@ -42,14 +42,14 @@ template<class T> struct Color3: Vec3<T> {
 };
 
 template<class T> struct Color4: Vec4<T> {
-    constexpr Color4(const Vec3<T>& rgb, T a = someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
+    constexpr Color4(const Vec3<T>& rgb, T a = Implementation::someFuncThatReturnsOne<T>()) noexcept: Vec4<T>(rgb[0], rgb[1], rgb[2], a) {}
 };
 
-Color3<float> bar(int a) { return {2.0f + a, 1.0f, 0.3f}; }
+constexpr Color3<float> bar(int a) { return {2.0f + a, 1.0f, 0.3f}; }
 
-float foo(const Color4<float>& c) { return c.d[3]; }
+constexpr float foo(const Color4<float>& c) { return c.d[3]; }
 
-int main(int argc, char**) {
-    float a = foo(bar(argc));
+int main() {
+    constexpr float a = foo({{1.0f, 2.f, 3.0f}});
     return a;
 }
