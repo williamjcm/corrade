@@ -9,10 +9,10 @@ namespace detail {
     }
 }
 
-int foo(float, bool = detail::id<sizeof(float) == 1>()) {
+template<class T> T foo(T, T = detail::id<sizeof(T) == 1>()) {
     return {};
 }
 
 int main() {
-    foo(1.0f);
+    foo(1);
 }
