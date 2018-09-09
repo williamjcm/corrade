@@ -42,8 +42,8 @@ template<class T> struct Color3: Vec3<T> {
 };
 
 template<class T> struct Color4 {
-    constexpr Color4(const Vec3<T>& rgb, T a = Implementation::someFuncThatReturnsOne<T>()) noexcept: d{rgb[0], rgb[1], rgb[2], a} {}
-    T d[4];
+    constexpr Color4(T a, T b = Implementation::someFuncThatReturnsOne<T>()) noexcept: d{a, b} {}
+    T d[2];
 };
 
 // constexpr Color3<float> bar(int a) { return {2.0f + a, 1.0f, 0.3f}; }
