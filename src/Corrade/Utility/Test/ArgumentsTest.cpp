@@ -48,9 +48,9 @@ template<class T> struct Color4 {
 
 // constexpr Color3<float> bar(int a) { return {2.0f + a, 1.0f, 0.3f}; }
 
-constexpr float foo(const Color4<float>& c) { return c.d[3]; }
+constexpr float foo(const Color4<float>& c) { return c.d[1]; }
 
 int main() {
-    float a = foo({{1.0f, 2.f, 3.0f}});
+    float a = foo({1.0f});
     return a;
 }
