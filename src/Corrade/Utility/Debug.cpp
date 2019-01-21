@@ -53,6 +53,10 @@
 #endif
 #endif
 
+#ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+#include "Corrade/Utility/Assert.h"
+#endif
+
 namespace Corrade { namespace Utility {
 
 namespace {
@@ -82,6 +86,10 @@ std::ostream* Error::_globalErrorOutput = &std::cerr;
 #if !defined(CORRADE_TARGET_WINDOWS) || defined(CORRADE_UTILITY_USE_ANSI_COLORS)
 Debug::Color Debug::_globalColor = Debug::Color::Default;
 bool Debug::_globalColorBold = false;
+#endif
+
+#ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+bool Debug::_globalSourceLocationEnabled = false;
 #endif
 
 template<Debug::Color c, bool bold> Debug::Modifier Debug::colorInternal() {
@@ -240,7 +248,11 @@ bool Debug::isTty() { return isTty(_globalOutput); }
 bool Warning::isTty() { return Debug::isTty(_globalWarningOutput); }
 bool Error::isTty() { return Debug::isTty(_globalErrorOutput); }
 
-Debug::Debug(std::ostream* const output, const Flags flags): _flags{InternalFlag(static_cast<unsigned char>(flags))|InternalFlag::NoSpaceBeforeNextValue} {
+Debug::Debug(std::ostream* const output, const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): _flags{InternalFlag(static_cast<unsigned char>(flags))|InternalFlag::NoSpaceBeforeNextValue} {
     /* Save previous global output and replace it with current one */
     _previousGlobalOutput = _globalOutput;
     _globalOutput = _output = output;
@@ -257,23 +269,76 @@ Debug::Debug(std::ostream* const output, const Flags flags): _flags{InternalFlag
     _previousColor = _globalColor;
     _previousColorBold = _globalColorBold;
     #endif
+
+    /* Save previous enabled status of source location. Enable if the flags
+       have it. There's no way to disable this other than the instance what
+       enabled going out of scope again. */
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    _previousSourceLocationEnabled = _globalSourceLocationEnabled;
+    if(flags & Flag::SourceLocation) _globalSourceLocationEnabled = true;
+    if(_globalSourceLocationEnabled) {
+        /** @todo this will inflate all builds *extremely*, provide some way to opt-in (and don't save anything if opted out) */
+        _sourceLocationFile = sourceLocation.file_name();
+        _sourceLocationLine = sourceLocation.line();
+    }
+    #endif
 }
 
-Warning::Warning(std::ostream* const output, const Flags flags): Debug{flags} {
+Warning::Warning(std::ostream* const output, const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): Debug{flags
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    , sourceLocation
+    #endif
+} {
     /* Save previous global output and replace it with current one */
     _previousGlobalWarningOutput = _globalWarningOutput;
     _globalWarningOutput = _output = output;
 }
 
-Error::Error(std::ostream* const output, const Flags flags): Debug{flags} {
+Error::Error(std::ostream* const output, const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): Debug{flags
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    , sourceLocation
+    #endif
+} {
     /* Save previous global output and replace it with current one */
     _previousGlobalErrorOutput = _globalErrorOutput;
     _globalErrorOutput = _output = output;
 }
 
-Debug::Debug(const Flags flags): Debug{_globalOutput, flags} {}
-Warning::Warning(const Flags flags): Warning{_globalWarningOutput, flags} {}
-Error::Error(const Flags flags): Error{_globalErrorOutput, flags} {}
+Debug::Debug(const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): Debug{_globalOutput, flags
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    , sourceLocation
+    #endif
+} {}
+Warning::Warning(const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): Warning{_globalWarningOutput, flags
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    , sourceLocation
+    #endif
+} {}
+Error::Error(const Flags flags
+    #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+    , const std::experimental::source_location& sourceLocation
+    #endif
+): Error{_globalErrorOutput, flags
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    , sourceLocation
+    #endif
+} {}
 
 void Debug::cleanupOnDestruction() {
     /* Reset output color */
@@ -285,6 +350,11 @@ void Debug::cleanupOnDestruction() {
 
     /* Reset previous global output */
     _globalOutput = _previousGlobalOutput;
+
+    /* Reset previous enabled status of source location */
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    _globalSourceLocationEnabled = _previousSourceLocationEnabled;
+    #endif
 }
 
 Debug::~Debug() {
@@ -314,6 +384,15 @@ Fatal::~Fatal() {
 
 template<class T> Debug& Debug::print(const T& value) {
     if(!_output) return *this;
+
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    /* Print source location, if not printed yet */
+    if(_sourceLocationFile) {
+        CORRADE_INTERNAL_ASSERT(_flags & InternalFlag::NoSpaceBeforeNextValue);
+        *_output << _sourceLocationFile << ":" << _sourceLocationLine << ": ";
+        _sourceLocationFile = nullptr;
+    }
+    #endif
 
     /* Separate values with spaces, if enabled */
     if(_flags & InternalFlag::NoSpaceBeforeNextValue)

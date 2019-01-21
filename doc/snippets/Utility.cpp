@@ -355,6 +355,23 @@ Utility::Debug{} << "this has default color again";
 /* [Debug-modifiers-colors-scoped] */
 }
 
+#ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+{
+/* [Debug-source-location] */
+float a = 336;
+{
+    Utility::Debug enableSourceLocation{Utility::Debug::Flag::SourceLocation};
+
+    Utility::Debug{} << "the result is" << (a /= 8);
+
+    Utility::Debug{} << "but here it's" << (a /= 8);
+}
+
+Utility::Debug{} << "and finally, " << (a *= 8);
+/* [Debug-source-location] */
+}
+#endif
+
 {
 /* [Debug-nospace] */
 Utility::Debug{} << "Value:" << 16 << Utility::Debug::nospace << "," << 24;

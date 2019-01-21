@@ -80,4 +80,9 @@
 #define CORRADE_CXX_STANDARD __cplusplus
 #endif
 
+/* Source location support in Debug */
+#if defined(__GNUC__) && __GNUC__*100 + __GNUC_MINOR__ >= 801
+#define CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+#endif
+
 #endif

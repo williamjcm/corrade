@@ -40,6 +40,16 @@
 #include "Corrade/Utility/Utility.h"
 #include "Corrade/Utility/visibility.h"
 
+#ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+#if CORRADE_CXX_STANDARD < 201401
+#define constexpr /** @todo UGH what?! (submit a PR with this?) */
+#endif
+#include <experimental/source_location>
+#if CORRADE_CXX_STANDARD < 201401
+#undef constexpr
+#endif
+#endif
+
 namespace Corrade { namespace Utility {
 
 namespace Implementation { struct DebugOstreamFallback; }
@@ -105,6 +115,29 @@ Similarly as with scoped output redirection, colors can be also scoped:
 
 @snippet Utility.cpp Debug-modifiers-colors-scoped
 
+@section Utility-Debug-source-location Source location
+
+Similarly to the [new dbg! macro in Rust](https://blog.rust-lang.org/2019/01/17/Rust-1.32.0.html#the-dbg-macro),
+on supported compilers the utility is able to print source file location and
+line where the debug output was executed, improving the "printf debugging"
+experience. By default no source location info is printed and you need to
+enable it with @ref Flag::SourceLocation. Similarly to colors and output
+redirection it works in a scoped way. For example the following code:
+
+@snippet Utility.cpp Debug-source-location
+
+May print something like this:
+
+@code{.shell-session}
+main.cpp:10: the result is 42
+main.cpp:12: the result is 5.25
+and finally, 42
+@endcode
+
+At the moment, this feature is available only on GCC 8.1 and newer. You can
+check for its availability using the @ref CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+predefined macro.
+
 @see @ref Warning, @ref Error, @ref Fatal, @ref CORRADE_ASSERT(),
     @ref CORRADE_INTERNAL_ASSERT(), @ref CORRADE_INTERNAL_ASSERT_OUTPUT(),
     @ref AndroidLogStreamBuffer, @ref formatString()
@@ -129,7 +162,18 @@ class CORRADE_UTILITY_EXPORT Debug {
              *      colored output by default works only if outputting directly
              *      to the console. See also @ref CORRADE_UTILITY_USE_ANSI_COLORS.
              */
-            DisableColors = 1 << 1
+            DisableColors = 1 << 1,
+
+            #if defined(DOXYGEN_GENERATING_OUTPUT) || defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            /**
+             * Include source location in debug messages. See
+             * @ref Utility-Debug-source-location for more information.
+             * @partialsupport Supported only on GCC 8.1 and newer, use the
+             *      @ref CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION macro to
+             *      check for the support.
+             */
+            SourceLocation = 1 << 2
+            #endif
         };
 
         /**
@@ -329,7 +373,11 @@ class CORRADE_UTILITY_EXPORT Debug {
          * Uses output of enclosing @ref Debug instance or uses @ref std::cout
          * if there isn't any.
          */
-        explicit Debug(Flags flags = {});
+        explicit Debug(Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /**
          * @brief Constructor
@@ -341,7 +389,11 @@ class CORRADE_UTILITY_EXPORT Debug {
          * during lifetime of this instance will inherit the output set in
          * @p output.
          */
-        explicit Debug(std::ostream* output, Flags flags = {});
+        explicit Debug(std::ostream* output, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /** @brief Copying is not allowed */
         Debug(const Debug&) = delete;
@@ -465,6 +517,9 @@ class CORRADE_UTILITY_EXPORT Debug {
         static CORRADE_UTILITY_LOCAL Color _globalColor;
         static CORRADE_UTILITY_LOCAL bool _globalColorBold;
         #endif
+        #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+        static CORRADE_UTILITY_LOCAL bool _globalSourceLocationEnabled;
+        #endif
 
         template<class T> CORRADE_UTILITY_LOCAL Debug& print(const T& value);
         CORRADE_UTILITY_LOCAL void resetColorInternal();
@@ -475,6 +530,11 @@ class CORRADE_UTILITY_EXPORT Debug {
         #else
         Color _previousColor;
         bool _previousColorBold;
+        #endif
+        #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+        bool _previousSourceLocationEnabled{};
+        const char* _sourceLocationFile{};
+        int _sourceLocationLine{};
         #endif
 };
 
@@ -614,7 +674,11 @@ class CORRADE_UTILITY_EXPORT Warning: public Debug {
          * Inherits output of enclosing @ref Warning instance or uses
          * @ref std::cerr if there isn't any.
          */
-        explicit Warning(Flags flags = {});
+        explicit Warning(Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /**
          * @brief Constructor
@@ -626,7 +690,11 @@ class CORRADE_UTILITY_EXPORT Warning: public Debug {
          * constructor during lifetime of this instance will inherit the output
          * set in @p output.
          */
-        explicit Warning(std::ostream* output, Flags flags = {});
+        explicit Warning(std::ostream* output, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /** @brief Copying is not allowed */
         Warning(const Warning&) = delete;
@@ -689,7 +757,11 @@ class CORRADE_UTILITY_EXPORT Error: public Debug {
          * Inherits output of enclosing @ref Error instance or uses
          * @ref std::cerr if there isn't any.
          */
-        explicit Error(Flags flags = {});
+        explicit Error(Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /**
          * @brief Constructor
@@ -701,7 +773,11 @@ class CORRADE_UTILITY_EXPORT Error: public Debug {
          * constructor during lifetime of this instance will inherit the output
          * set in @p output.
          */
-        explicit Error(std::ostream* output, Flags flags = {});
+        explicit Error(std::ostream* output, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& location = std::experimental::source_location::current()
+            #endif
+        );
 
         /** @brief Copying is not allowed */
         Error(const Error&) = delete;
@@ -759,10 +835,26 @@ class CORRADE_UTILITY_EXPORT Fatal: public Error {
          * Sets output to @ref std::cerr. The @p exitCode is passed to
          * @ref std::exit() on destruction.
          */
-        Fatal(int exitCode = 1, Flags flags = {}): Error{flags}, _exitCode{exitCode} {}
+        Fatal(int exitCode = 1, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& sourceLocation = std::experimental::source_location::current()
+            #endif
+        ): Error{flags
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , sourceLocation
+            #endif
+        }, _exitCode{exitCode} {}
 
         /** @overload */
-        Fatal(Flags flags): Fatal{1, flags} {}
+        Fatal(Flags flags
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& sourceLocation = std::experimental::source_location::current()
+            #endif
+        ): Fatal{1, flags
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , sourceLocation
+            #endif
+        } {}
 
         /**
          * @brief Constructor
@@ -771,10 +863,26 @@ class CORRADE_UTILITY_EXPORT Fatal: public Error {
          * @param exitCode      Application exit code to be used on destruction
          * @param flags         Output flags
          */
-        Fatal(std::ostream* output, int exitCode = 1, Flags flags = {}): Error{output, flags}, _exitCode{exitCode} {}
+        Fatal(std::ostream* output, int exitCode = 1, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& sourceLocation = std::experimental::source_location::current()
+            #endif
+        ): Error{output, flags
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , sourceLocation
+            #endif
+        }, _exitCode{exitCode} {}
 
         /** @overload */
-        Fatal(std::ostream* output, Flags flags = {}): Fatal{output, 1, flags} {}
+        Fatal(std::ostream* output, Flags flags = {}
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , const std::experimental::source_location& sourceLocation = std::experimental::source_location::current()
+            #endif
+        ): Fatal{output, 1, flags
+            #if !defined(DOXYGEN_GENERATING_OUTPUT) && defined(CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION)
+            , sourceLocation
+            #endif
+        } {}
 
         /**
          * @brief Destructor

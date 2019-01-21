@@ -69,6 +69,10 @@ struct DebugTest: TestSuite::Tester {
     void scopedOutput();
 
     void debugColor();
+
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    void sourceLocation();
+    #endif
 };
 
 DebugTest::DebugTest() {
@@ -119,6 +123,10 @@ DebugTest::DebugTest() {
         &DebugTest::scopedOutput,
 
         &DebugTest::debugColor});
+
+    #ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+    addTests({&DebugTest::sourceLocation});
+    #endif
 }
 
 void DebugTest::debug() {
@@ -666,6 +674,31 @@ void DebugTest::debugColor() {
     Debug(&out) << Debug::Color::White << Debug::Color(0xde);
     CORRADE_COMPARE(out.str(), "Debug::Color::White Debug::Color(0xde)\n");
 }
+
+#ifdef CORRADE_UTILITY_DEBUG_HAS_SOURCE_LOCATION
+void DebugTest::sourceLocation() {
+    std::ostringstream out;
+
+    {
+        Debug redirect{&out};
+
+        {
+            Debug enable{Debug::Flag::SourceLocation};
+
+            Debug{} << "hello";
+
+            Debug{} << "and this is from another line";
+        }
+
+        Debug{} << "this no longer";
+    }
+
+    CORRADE_COMPARE(out.str(),
+        __FILE__ ":688: hello\n"
+        __FILE__ ":690: and this is from another line\n"
+        "this no longer\n");
+}
+#endif
 
 }}}}
 
